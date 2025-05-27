@@ -76,3 +76,54 @@ footer {
   height: 200px;
   object-fit: contain;
 }
+    .hero {
+      background-color: #f8f9fa;
+      padding: 50px 0;
+      text-align: center;
+    }
+    .hero img {
+      max-width: 300px;
+    }
+    .product-card img {
+      height: 200px;
+      object-fit: contain;
+    }
+    footer {
+      background-color: #f8f9fa;
+      padding: 30px 0;
+      text-align: left;
+      margin-top: 50px;
+      background-image: url('assets/images/footer-banner.jpg');
+      background-size: cover;
+      background-position: left;
+      color: white;
+    }
+    footer p, footer a {
+      margin: 5px 0;
+      color: white;
+    }
+    footer a:hover {
+      text-decoration: underline;
+    }
+  .btn-outline-primary {
+  border-width: 2px;
+  font-weight: 500;
+    }
+  #loginPopup .form-control,
+#registerPopup .form-control {
+  font-size: 0.95rem;
+}
+@media (max-width: 1200px) {
+  nav .navbar-nav {
+    flex-wrap: wrap;
+  }
+
+  form.d-flex {
+    flex-wrap: nowrap;
+    max-width: 300px;
+  }
+
+  form.d-flex input {
+    flex: 1;
+  }
+}

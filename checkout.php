@@ -5,31 +5,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Product Detail</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Checkout - Toy Store</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="assets/css/style.css">
-  <style>
-    .product-detail img {
-      max-width: 100%;
-      height: auto;
-    }
-    .product-card img {
-      height: 200px;
-      object-fit: contain;
-    }
-    #cart-preview:hover, #cartIcon:hover + #cart-preview, #cartIcon:hover {
-      display: block !important;
-    }
-    .cart-button-group button {
-      border: none;
-      background: #e9ecef;
-      width: 32px;
-      height: 32px;
-      font-weight: bold;
-      border-radius: 4px;
-    }
-  </style>
 </head>
   <script>
   function toggleLogin() {
@@ -38,119 +15,87 @@
   }
 </script>
 <body>
-
-<!-- Navigation -->
-
-
-<?php
-if (isset($_GET['id'])) {
-  $id = intval($_GET['id']);
-  $result = $conn->query("SELECT * FROM products WHERE id = $id");
-  $product = $result->fetch_assoc();
-}
-?>
-
-<div class="container py-5 product-detail">
-  <div class="row">
-    <div class="col-md-6">
-      <img src="<?= $product['image'] ?>" alt="<?= $product['name'] ?>">
-    </div>
-    <div class="col-md-6">
-      <h2><?= $product['name'] ?></h2>
-      <h4 class="text-danger">$<?= $product['price'] ?></h4>
-      <p><strong>Category:</strong> <?= ucfirst($product['category']) ?></p>
-      <p>This is a great toy for children and families to enjoy. Add to cart now and bring joy to your home!</p>
-      <button onclick='addToCart(<?= json_encode($product) ?>)' class="btn btn-success">Add to Cart</button>
-    </div>
-  </div>
-</div>
-<!-- Sản phẩm có thể bạn thích -->
+  
 <div class="container py-5">
-  <h3 class="text-center mb-4">Products you might like</h3>
-  <div class="row g-4">
-    <?php
-    $suggested = $conn->query("SELECT * FROM products WHERE id != $id ORDER BY RAND() LIMIT 4");
-    while($s = $suggested->fetch_assoc()): ?>
-      <div class="col-md-3">
-        <a href="product.php?id=<?= $s['id'] ?>" class="text-decoration-none text-dark">
-          <div class="card product-card">
-            <img src="<?= $s['image'] ?>" class="card-img-top" alt="<?= $s['name'] ?>">
-            <div class="card-body text-center">
-              <h5 class="card-title"><?= $s['name'] ?></h5>
-              <p class="card-text fw-bold">$<?= $s['price'] ?></p>
-            </div>
-          </div>
-        </a>
+  <h2 class="mb-4">📦 Thông Tin Đặt Hàng</h2>
+
+  <form action="process_order.php" method="POST" onsubmit="return submitOrder()">
+    <div class="row mb-3">
+      <div class="col-md-6">
+        <label class="form-label">Họ và tên</label>
+        <input type="text" name="customer_name" class="form-control" required>
       </div>
-    <?php endwhile; ?>
-  </div>
+      <div class="col-md-6">
+        <label class="form-label">Số điện thoại</label>
+        <input type="text" name="customer_phone" class="form-control" required>
+      </div>
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Địa chỉ giao hàng</label>
+      <textarea name="customer_address" class="form-control" rows="3" required></textarea>
+    </div>
+
+    <h4 class="mt-5">🛒 Giỏ Hàng Của Bạn</h4>
+    <table class="table mt-3" id="cart-table">
+      <thead>
+        <tr>
+          <th>Sản phẩm</th>
+          <th>Số lượng</th>
+          <th>Giá</th>
+          <th>Tổng</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Dữ liệu giỏ hàng sẽ hiển thị bằng JavaScript -->
+      </tbody>
+    </table>
+
+    <div class="text-end">
+      <button type="submit" class="btn btn-success">Đặt Hàng</button>
+    </div>
+  </form>
 </div>
 
 <script>
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
+const cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-function updateCartUI() {
-  const cartCount = document.getElementById("cart-count");
-  const cartPreview = document.getElementById("cart-items-preview");
+function renderCart() {
+  const tableBody = document.querySelector("#cart-table tbody");
+  let html = '';
+  let total = 0;
 
-  cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-  cartPreview.innerHTML = cart.map((item, i) => `
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <img src="${item.image}" width="40">
-      <div class="flex-grow-1 mx-2">
-        ${item.name}
-        <div class="cart-button-group mt-1">
-          <button onclick="changeQty(${i}, -1)">-</button>
-          <span class="mx-2">${item.quantity}</span>
-          <button onclick="changeQty(${i}, 1)">+</button>
-        </div>
-      </div>
-      <span class="badge bg-secondary">$${item.price}</span>
-      <button onclick="removeFromCart(${i})" class="btn btn-sm btn-danger ms-2">&times;</button>
-    </li>
-  `).join('');
-}
+  cart.forEach(item => {
+    const line = item.price * item.quantity;
+    total += line;
+    html += `
+      <tr>
+        <td>${item.name}<input type="hidden" name="items[]" value="${item.id}|${item.quantity}"></td>
+        <td>${item.quantity}</td>
+        <td>$${item.price}</td>
+        <td>$${line.toFixed(2)}</td>
+      </tr>
+    `;
+  });
 
-function addToCart(product) {
-  let found = cart.find(p => p.id === product.id);
-  if (found) {
-    found.quantity++;
+  if (cart.length === 0) {
+    html = '<tr><td colspan="4" class="text-center text-muted">Giỏ hàng của bạn đang trống.</td></tr>';
   } else {
-    cart.push({...product, quantity: 1});
+    html += `<tr><td colspan="3" class="text-end fw-bold">Tổng cộng:</td><td><strong>$${total.toFixed(2)}</strong></td></tr>`;
   }
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartUI();
-  showToast("✅ Đã thêm vào giỏ hàng!");
-}
-function showToast(message) {
-  const toast = document.getElementById("cart-toast");
-  toast.textContent = message;
-  toast.style.display = "block";
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 2500);
+
+  tableBody.innerHTML = html;
 }
 
-function changeQty(index, delta) {
-  if (!cart[index]) return;
-  cart[index].quantity += delta;
-  if (cart[index].quantity <= 0) cart.splice(index, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartUI();
+function submitOrder() {
+  if (cart.length === 0) {
+    alert("Giỏ hàng đang trống!");
+    return false;
+  }
+  return true;
 }
 
-function removeFromCart(index) {
-  cart.splice(index, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartUI();
-}
-
-document.addEventListener("DOMContentLoaded", updateCartUI);
+document.addEventListener("DOMContentLoaded", renderCart);
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<div id="cart-toast" style="position: fixed; top: 80px; right: 30px; z-index: 9999; display: none;" class="alert alert-success shadow">
-  ✅ Đã thêm vào giỏ hàng!
-</div>
 <script>
   function toggleLogin() {
     document.getElementById("loginPopup").classList.toggle("d-none");
@@ -260,4 +205,22 @@ document.getElementById("registerForm").addEventListener("submit", function(e) {
 });
 </script>
 </body>
+<script>
+function submitOrder() {
+  const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  if (cart.length === 0) {
+    alert("Giỏ hàng đang trống!");
+    return;
+  }
+
+  const form = document.getElementById("checkout-form");
+  const hidden = document.createElement("input");
+  hidden.type = "hidden";
+  hidden.name = "cart";
+  hidden.value = JSON.stringify(cart);
+  form.appendChild(hidden);
+  form.submit();
+}
+</script>
+
 </html>

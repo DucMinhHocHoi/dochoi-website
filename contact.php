@@ -2,155 +2,53 @@
 <?php include 'includes/session.php'; ?>
 <?php include 'header.php'; ?>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="vi">
 <head>
   <meta charset="UTF-8">
-  <title>Product Detail</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <title>Liên hệ | Cửa hàng Đồ Chơi</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
   <link rel="stylesheet" href="assets/css/style.css">
   <style>
-    .product-detail img {
-      max-width: 100%;
-      height: auto;
-    }
-    .product-card img {
-      height: 200px;
-      object-fit: contain;
-    }
-    #cart-preview:hover, #cartIcon:hover + #cart-preview, #cartIcon:hover {
-      display: block !important;
-    }
-    .cart-button-group button {
-      border: none;
-      background: #e9ecef;
-      width: 32px;
-      height: 32px;
-      font-weight: bold;
-      border-radius: 4px;
+    .form-section {
+      max-width: 600px;
+      margin: 60px auto;
+      padding: 30px;
+      background-color: #fff;
+      border-radius: 15px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
     }
   </style>
-</head>
-  <script>
+    <script>
   function toggleLogin() {
     const popup = document.getElementById("loginPopup");
     popup.classList.toggle("d-none");
   }
 </script>
+</head>
 <body>
 
-<!-- Navigation -->
+  <!-- Navigation -->
 
 
-<?php
-if (isset($_GET['id'])) {
-  $id = intval($_GET['id']);
-  $result = $conn->query("SELECT * FROM products WHERE id = $id");
-  $product = $result->fetch_assoc();
-}
-?>
-
-<div class="container py-5 product-detail">
-  <div class="row">
-    <div class="col-md-6">
-      <img src="<?= $product['image'] ?>" alt="<?= $product['name'] ?>">
-    </div>
-    <div class="col-md-6">
-      <h2><?= $product['name'] ?></h2>
-      <h4 class="text-danger">$<?= $product['price'] ?></h4>
-      <p><strong>Category:</strong> <?= ucfirst($product['category']) ?></p>
-      <p>This is a great toy for children and families to enjoy. Add to cart now and bring joy to your home!</p>
-      <button onclick='addToCart(<?= json_encode($product) ?>)' class="btn btn-success">Add to Cart</button>
-    </div>
-  </div>
-</div>
-<!-- Sản phẩm có thể bạn thích -->
-<div class="container py-5">
-  <h3 class="text-center mb-4">Products you might like</h3>
-  <div class="row g-4">
-    <?php
-    $suggested = $conn->query("SELECT * FROM products WHERE id != $id ORDER BY RAND() LIMIT 4");
-    while($s = $suggested->fetch_assoc()): ?>
-      <div class="col-md-3">
-        <a href="product.php?id=<?= $s['id'] ?>" class="text-decoration-none text-dark">
-          <div class="card product-card">
-            <img src="<?= $s['image'] ?>" class="card-img-top" alt="<?= $s['name'] ?>">
-            <div class="card-body text-center">
-              <h5 class="card-title"><?= $s['name'] ?></h5>
-              <p class="card-text fw-bold">$<?= $s['price'] ?></p>
-            </div>
-          </div>
-        </a>
+  <!-- Contact Form -->
+  <div class="form-section">
+    <h3 class="text-center mb-4">📬 Liên hệ với chúng tôi</h3>
+    <form action="#" method="POST">
+      <div class="mb-3">
+        <label for="name" class="form-label">Họ tên</label>
+        <input type="text" class="form-control" id="name" name="name" placeholder="Nhập họ tên">
       </div>
-    <?php endwhile; ?>
-  </div>
-</div>
-
-<script>
-let cart = JSON.parse(localStorage.getItem("cart")) || [];
-
-function updateCartUI() {
-  const cartCount = document.getElementById("cart-count");
-  const cartPreview = document.getElementById("cart-items-preview");
-
-  cartCount.textContent = cart.reduce((sum, item) => sum + item.quantity, 0);
-  cartPreview.innerHTML = cart.map((item, i) => `
-    <li class="list-group-item d-flex justify-content-between align-items-center">
-      <img src="${item.image}" width="40">
-      <div class="flex-grow-1 mx-2">
-        ${item.name}
-        <div class="cart-button-group mt-1">
-          <button onclick="changeQty(${i}, -1)">-</button>
-          <span class="mx-2">${item.quantity}</span>
-          <button onclick="changeQty(${i}, 1)">+</button>
-        </div>
+      <div class="mb-3">
+        <label for="email" class="form-label">Email</label>
+        <input type="email" class="form-control" id="email" name="email" placeholder="Nhập email">
       </div>
-      <span class="badge bg-secondary">$${item.price}</span>
-      <button onclick="removeFromCart(${i})" class="btn btn-sm btn-danger ms-2">&times;</button>
-    </li>
-  `).join('');
-}
-
-function addToCart(product) {
-  let found = cart.find(p => p.id === product.id);
-  if (found) {
-    found.quantity++;
-  } else {
-    cart.push({...product, quantity: 1});
-  }
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartUI();
-  showToast("✅ Đã thêm vào giỏ hàng!");
-}
-function showToast(message) {
-  const toast = document.getElementById("cart-toast");
-  toast.textContent = message;
-  toast.style.display = "block";
-  setTimeout(() => {
-    toast.style.display = "none";
-  }, 2500);
-}
-
-function changeQty(index, delta) {
-  if (!cart[index]) return;
-  cart[index].quantity += delta;
-  if (cart[index].quantity <= 0) cart.splice(index, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartUI();
-}
-
-function removeFromCart(index) {
-  cart.splice(index, 1);
-  localStorage.setItem("cart", JSON.stringify(cart));
-  updateCartUI();
-}
-
-document.addEventListener("DOMContentLoaded", updateCartUI);
-</script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-<div id="cart-toast" style="position: fixed; top: 80px; right: 30px; z-index: 9999; display: none;" class="alert alert-success shadow">
-  ✅ Đã thêm vào giỏ hàng!
-</div>
+      <div class="mb-3">
+        <label for="message" class="form-label">Nội dung</label>
+        <textarea class="form-control" id="message" name="message" rows="4" placeholder="Viết lời nhắn tại đây"></textarea>
+      </div>
+      <button type="submit" class="btn btn-primary w-100">Gửi liên hệ</button>
+    </form>
+  </div>
 <script>
   function toggleLogin() {
     document.getElementById("loginPopup").classList.toggle("d-none");

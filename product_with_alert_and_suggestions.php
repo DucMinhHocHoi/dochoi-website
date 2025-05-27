@@ -1,4 +1,6 @@
 <?php include 'includes/db.php'; ?>
+<?php include 'includes/session.php'; ?>
+<?php include 'header.php'; ?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -38,32 +40,7 @@
 <body>
 
 <!-- Navigation -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-  <div class="container">
-    <a class="navbar-brand fw-bold" href="index.php">Toy Store</a>
-    <ul class="navbar-nav ms-auto">
-      <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-      <li class="nav-item"><a class="nav-link" href="products.php">Product</a></li>
-      <li class="nav-item position-relative">
-        <a class="nav-link" href="cart.php" id="cartIcon" onmouseover="showCartPreview()" onmouseout="hideCartPreview()">
-          Cart 🛒
-          <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" id="cart-count">0</span>
-        </a>
-        
-<div id="cart-preview" class="dropdown-menu dropdown-menu-end p-3 shadow" style="width: 340px; display: none; position: absolute; right: 0; top: 100%; z-index: 999;" onmouseover="cancelHideCart()" onmouseout="hideCartPreview()">
-  <h6 class="mb-3"><i class="bi bi-cart4"></i> Sản phẩm đã thêm</h6>
-  <div id="cart-items-preview" class="list-group" style="max-height: 250px; overflow-y: auto;"></div>
-  <div class="text-end mt-3">
-    <a href="cart.php" class="btn btn-primary btn-sm">Xem Giỏ Hàng</a>
-  </div>
-</div>
 
-      </li>
-      <li class="nav-item"><a class="nav-link" href="#">Checkout</a></li>
-      <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
-    </ul>
-  </div>
-</nav>
 
 <script>
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
